@@ -27,9 +27,15 @@ class Runner:
     def __init__(self):
         self.stat_files = dict()
 
-    def run(self, tree, path, config):
+    def run(self, tree, path, config, mlir_mode):
         if 'harness' not in config:
             return
+        if mlir_mode:
+            if 'mlir_transform' not in config.keys():
+                return
+        else:
+            if 'mlir_transform' in config.keys():
+                return
         from .harness import get_harness
         key = config['harness']['type']
         harness = get_harness(key)
@@ -67,12 +73,13 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='tpu-perf benchmark tool')
     BuildTree.add_arguments(parser)
+    parser.add_argument('--mlir', action='store_true')
     args = parser.parse_args()
 
     tree = BuildTree(os.path.abspath('.'), args)
     runner = Runner()
     for path, config in tree.walk():
-        runner.run(tree, path, config)
+        runner.run(tree, path, config, args.mlir)
 
 if __name__ == '__main__':
     main()
